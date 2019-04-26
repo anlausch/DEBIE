@@ -92,6 +92,7 @@ for drp, rf in configs:
 
   class modelExecutor:
     def __init__(self):
+      tf.reset_default_graph()
       # model initialization
       self.model = model.DebbieModel(vectors, PARAMETERS["mlp_lay"], activation = tf.nn.tanh, scope = "debbie", learning_rate = PARAMETERS["learning_rate"], reg_factor=PARAMETERS["reg_factor"])
       self.batch_size = PARAMETERS["batch_size"]
