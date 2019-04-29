@@ -7,11 +7,9 @@ EMBEDDING_VOCAB_PATH=/work/gglavas/data/word_embs/yacle/fasttext/200K/npformat/f
 
 python exp_debbie_args.py \
     --dropout_keep_probs="[0.9]" \
-    --reg_factors="[0.5, 0.75, 1.0]" \
+    --reg_factors="[0.1, 0.15, 0.2]" \
     --output_path=${OUTPUT_PATH} \
     --input_path=${INPUT_PATH} \
     --embedding_vector_path=${EMBEDDING_VECTOR_PATH} \
     --embedding_vocab_path=${EMBEDDING_VOCAB_PATH} \
     |& tee ${OUTPUT_PATH}/log.out
-
-
