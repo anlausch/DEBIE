@@ -82,7 +82,15 @@ def prepare_input_examples(input_paths, output_path):
   prepare_input_examples(["./data/weat_1.txt", "./data/weat_1_augmentation.txt"], "./data/weat_1_prepared_filtered.txt")
   prepare_input_examples(["./data/weat_1.txt", "./data/weat_1_augmentation_filtered_cleaned.txt"], "./data/weat_1_prepared_filtered_cleaned.txt")
   prepare_input_examples(["./data/weat_1_augmentation_filtered_cleaned.txt"], "./data/weat_1_prepared_filtered_cleaned_wo_original.txt")
-  >>> prepare_input_examples(["./data/weat_1_augmentation.txt"], "./data/weat_1_prepared_filtered_wo_original.txt")
+  prepare_input_examples(["./data/weat_1_augmentation.txt"], "./data/weat_1_prepared_filtered_wo_original.txt")
+  #>>> prepare_input_examples(["./data/weat_1_aug_postspec_2.txt"], "./data/weat_1_prepared_filtered_postspec_2_wo_original.txt")
+  #>>> prepare_input_examples(["./data/weat_1.txt","./data/weat_1_aug_postspec_2.txt"], "./data/weat_1_prepared_filtered_postspec_2.txt")
+  >>> prepare_input_examples(["./data/weat_1.txt","./data/weat_1_aug_postspec_3.txt"], "./data/weat_1_prepared_filtered_postspec_3.txt")
+  >>> prepare_input_examples(["./data/weat_1.txt","./data/weat_1_aug_postspec_4.txt"], "./data/weat_1_prepared_filtered_postspec_4.txt")
+  >>> prepare_input_examples(["./data/weat_1.txt","./data/weat_1_aug_postspec_5.txt"], "./data/weat_1_prepared_filtered_postspec_5.txt")
+  >>> prepare_input_examples(["./data/weat_1_aug_postspec_3.txt"], "./data/weat_1_prepared_filtered_postspec_3_wo_original.txt")
+  >>> prepare_input_examples(["./data/weat_1_aug_postspec_4.txt"], "./data/weat_1_prepared_filtered_postspec_4_wo_original.txt")
+  >>> prepare_input_examples(["./data/weat_1_aug_postspec_5.txt"], "./data/weat_1_prepared_filtered_postspec_5_wo_original.txt")
   """
   t1, t2, a1, a2 = fuse_stimuli(input_paths)
   a = flatten([a1, a2])
@@ -98,6 +106,7 @@ def prepare_input_examples(input_paths, output_path):
   with codecs.open(output_path, "w", "utf8") as f:
     for comb in product(t1, t2, a):
       f.write(comb[0] + "\t" + comb[1] + "\t" + comb[2] + "\n")
+    f.close()
 
 
 def load_input_examples(path):

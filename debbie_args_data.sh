@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 export CUDA_VISIBLE_DEVICES=3
-OUTPUT_PATH=/work/anlausch/debbie/output/data/cleaned
-INPUT_PATH=/work/anlausch/debbie/data/weat_1_prepared_filtered_cleaned.txt
+OUTPUT_PATH=/work/anlausch/debbie/output/data/cleaned_wo_original
+INPUT_PATH=/work/anlausch/debbie/data/weat_1_prepared_filtered_wo_original.txt
 EMBEDDING_VECTOR_PATH=/work/gglavas/data/word_embs/yacle/fasttext/200K/npformat/ft.wiki.en.300.vectors
 EMBEDDING_VOCAB_PATH=/work/gglavas/data/word_embs/yacle/fasttext/200K/npformat/ft.wiki.en.300.vocab
 
