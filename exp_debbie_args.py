@@ -27,7 +27,11 @@ parser.add_argument("--reg_factors", type=str, default=None,
 parser.add_argument("--output_path", type=str, default=None,
                     help="Output path", required=True)
 parser.add_argument("--input_path", type=str, default=None,
-                    help="Input path", required=True)
+                    help="Input path in case train and dev are in a single file", required=False)
+parser.add_argument("--input_path_train", type=str, default=None,
+                    help="Input path for a dedicated train set", required=False)
+parser.add_argument("--input_path_dev", type=str, default=None,
+                    help="Input path for a dedicated dev set", required=False)
 parser.add_argument("--embedding_vector_path", type=str, default=None,
                     help="Embedding vector path", required=True)
 parser.add_argument("--embedding_vocab_path", type=str, default=None,
@@ -39,7 +43,15 @@ args = parser.parse_args()
 drop_vals = eval(args.dropout_keep_probs)
 reg_factors = eval(args.reg_factors)
 output_path = args.output_path
-input_path = args.input_path
+if args.input_path is not None:
+  input_path = args.input_path
+  data_mode = "single"
+elif args.input_path_train is not None and args.input_path_dev is not None:
+  input_path_train = args.input_path_train
+  input_path_dev = args.input_path_dev
+  data_mode = "splitted"
+else:
+  raise ValueError("Either a single file or a train and a dev file need to be supplied")
 embedding_vector_path = args.embedding_vector_path
 embedding_vocab_path = args.embedding_vocab_path
 
@@ -74,13 +86,17 @@ for drp, rf in configs:
 
   print("Loading data...")
   #data = data_handler.load_input_examples("/work/anlausch/debbie/data/weat_1_prepared_filtered_small.txt")
-  data = data_handler.load_input_examples(input_path)
-
-  # TODO: Check again whether I need to shuffling
-  random.shuffle(data)
-  split_index = int(len(data)*0.7)
-  train = data[:split_index]
-  dev = data[split_index:]
+  if data_mode == "single":
+    print("Running single file data mode")
+    data = data_handler.load_input_examples(input_path)
+    random.shuffle(data)
+    split_index = int(len(data)*0.7)
+    train = data[:split_index]
+    dev = data[split_index:]
+  elif data_mode == "splitted":
+    print("Running splitted data mode")
+    train = data_handler.load_input_examples(input_path_train)
+    dev = data_handler.load_input_examples(input_path_dev)
 
   print("Loading embeddings...")
   vectors = np.load(embedding_vector_path)

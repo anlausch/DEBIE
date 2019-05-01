@@ -46,14 +46,16 @@ def cosine(a, b):
   return cos
 
 
-def get_top_k_similar(term, similarity_matrix, word2index, vocab_list, k=2):
+def get_top_k_similar(term, similarity_matrix, word2index, vocab_list, k, original_list):
   index = word2index[term]
   similarities = similarity_matrix[index]
-  top_k_indices = similarities.argsort()[-(k+1):][::-1]
+  top_k_indices = similarities.argsort()[-(k+len(original_list)):][::-1]
   top_k_terms = []
   for i in top_k_indices:
-    if i != index:
+    if i != index and vocab_list[i] not in original_list:
       top_k_terms.append(vocab_list[i])
+    if len(top_k_terms) == k:
+      break
   return top_k_terms
 
 
@@ -61,7 +63,7 @@ def augment_term_list(original_list, similarity_matrix, word2index, vocab_list, 
   augmented_list = []
   for term in original_list:
     if term in word2index:
-      top_k = get_top_k_similar(term, similarity_matrix, word2index, vocab_list, k)
+      top_k = get_top_k_similar(term, similarity_matrix, word2index, vocab_list, k, original_list)
       augmented_list.append(top_k)
     else:
       print("Not in vocab: %s" % term)

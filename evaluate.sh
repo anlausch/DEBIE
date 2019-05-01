@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-for config in "drp=0.9_rf=0.5" "drp=0.9_rf=0.75" "drp=0.9_rf=1.0"; do
+for config in "drp=0.9_rf=0.05" "drp=0.9_rf=0.1" "drp=0.9_rf=0.15" "drp=0.9_rf=0.2" "drp=0.9_rf=0.25" "drp=0.9_rf=0.5"; do
 
-    OUTPUT_PATH=/work/anlausch/debbie/output/reg_factor/${config}
+    OUTPUT_PATH=/work/anlausch/debbie/output/data/postspec_2_wo_original/${config}
 
     EMBEDDING_VECTOR_PATH=${OUTPUT_PATH}/${config}.vec
     EMBEDDING_VOCAB_PATH=/work/gglavas/data/word_embs/yacle/fasttext/200K/npformat/ft.wiki.en.300.vocab

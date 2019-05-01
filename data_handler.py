@@ -32,6 +32,40 @@ def flatten(l):
   return [item for sublist in l for item in sublist]
 
 
+
+def output_weat_dict_to_file(weat_dict, output_path):
+  with codecs.open(output_path, "w", "utf8") as f:
+    for key, value in weat_dict.items():
+      f.write(key + " ")
+      f.write(' '.join(value))
+      f.write('\n')
+
+
+def split_weat_in_train_dev(input_paths, output_train, output_dev):
+  """
+  :param input_paths:
+  :param output_train:
+  :param output_dev:
+  :return:
+  >>> split_weat_in_train_dev(["./data/weat_1_aug_postspec_2_new.txt"], "./data/weat_1_aug_postspec_2_train.txt", "./data/weat_1_aug_postspec_2_dev.txt")
+  """
+  t1, t2, a1, a2 = fuse_stimuli(input_paths)
+  weat_dict = {}
+  weat_dict["T1:"] = t1
+  weat_dict["T2:"] = t2
+  weat_dict["A1:"] = a1
+  weat_dict["A2:"] = a2
+  train_dict = {}
+  dev_dict = {}
+  for key, value in weat_dict.items():
+    split_index = int(len(value) * 0.7)
+    train_dict[key] = value[:split_index]
+    dev_dict[key] = value[split_index:]
+  output_weat_dict_to_file(train_dict, output_train)
+  output_weat_dict_to_file(dev_dict, output_dev)
+
+
+
 def fuse_stimuli(paths):
   """
   :param paths:
@@ -83,14 +117,16 @@ def prepare_input_examples(input_paths, output_path):
   prepare_input_examples(["./data/weat_1.txt", "./data/weat_1_augmentation_filtered_cleaned.txt"], "./data/weat_1_prepared_filtered_cleaned.txt")
   prepare_input_examples(["./data/weat_1_augmentation_filtered_cleaned.txt"], "./data/weat_1_prepared_filtered_cleaned_wo_original.txt")
   prepare_input_examples(["./data/weat_1_augmentation.txt"], "./data/weat_1_prepared_filtered_wo_original.txt")
-  #>>> prepare_input_examples(["./data/weat_1_aug_postspec_2.txt"], "./data/weat_1_prepared_filtered_postspec_2_wo_original.txt")
-  #>>> prepare_input_examples(["./data/weat_1.txt","./data/weat_1_aug_postspec_2.txt"], "./data/weat_1_prepared_filtered_postspec_2.txt")
-  >>> prepare_input_examples(["./data/weat_1.txt","./data/weat_1_aug_postspec_3.txt"], "./data/weat_1_prepared_filtered_postspec_3.txt")
-  >>> prepare_input_examples(["./data/weat_1.txt","./data/weat_1_aug_postspec_4.txt"], "./data/weat_1_prepared_filtered_postspec_4.txt")
-  >>> prepare_input_examples(["./data/weat_1.txt","./data/weat_1_aug_postspec_5.txt"], "./data/weat_1_prepared_filtered_postspec_5.txt")
-  >>> prepare_input_examples(["./data/weat_1_aug_postspec_3.txt"], "./data/weat_1_prepared_filtered_postspec_3_wo_original.txt")
-  >>> prepare_input_examples(["./data/weat_1_aug_postspec_4.txt"], "./data/weat_1_prepared_filtered_postspec_4_wo_original.txt")
-  >>> prepare_input_examples(["./data/weat_1_aug_postspec_5.txt"], "./data/weat_1_prepared_filtered_postspec_5_wo_original.txt")
+  #>>> prepare_input_examples(["./data/weat_1_aug_postspec_2_new.txt"], "./data/weat_1_prepared_filtered_postspec_2_wo_original.txt")
+  #>>> prepare_input_examples(["./data/weat_1.txt","./data/weat_1_aug_postspec_2_new.txt"], "./data/weat_1_prepared_filtered_postspec_2.txt")
+  #>>> prepare_input_examples(["./data/weat_1.txt","./data/weat_1_aug_postspec_3_new.txt"], "./data/weat_1_prepared_filtered_postspec_3.txt")
+  #>>> prepare_input_examples(["./data/weat_1.txt","./data/weat_1_aug_postspec_4_new.txt"], "./data/weat_1_prepared_filtered_postspec_4.txt")
+  #>>> prepare_input_examples(["./data/weat_1.txt","./data/weat_1_aug_postspec_5_new.txt"], "./data/weat_1_prepared_filtered_postspec_5.txt")
+  #>>> prepare_input_examples(["./data/weat_1_aug_postspec_3_new.txt"], "./data/weat_1_prepared_filtered_postspec_3_wo_original.txt")
+  #>>> prepare_input_examples(["./data/weat_1_aug_postspec_4_new.txt"], "./data/weat_1_prepared_filtered_postspec_4_wo_original.txt")
+  #>>> prepare_input_examples(["./data/weat_1_aug_postspec_5_new.txt"], "./data/weat_1_prepared_filtered_postspec_5_wo_original.txt")
+  >>> prepare_input_examples(["./data/weat_1_aug_postspec_2_train.txt"], "./data/weat_1_prepared_filtered_postspec_2_wo_original_train.txt")
+  >>> prepare_input_examples(["./data/weat_1_aug_postspec_2_dev.txt"], "./data/weat_1_prepared_filtered_postspec_2_wo_original_dev.txt")
   """
   t1, t2, a1, a2 = fuse_stimuli(input_paths)
   a = flatten([a1, a2])
