@@ -125,8 +125,10 @@ def prepare_input_examples(input_paths, output_path):
   #>>> prepare_input_examples(["./data/weat_1_aug_postspec_3_new.txt"], "./data/weat_1_prepared_filtered_postspec_3_wo_original.txt")
   #>>> prepare_input_examples(["./data/weat_1_aug_postspec_4_new.txt"], "./data/weat_1_prepared_filtered_postspec_4_wo_original.txt")
   #>>> prepare_input_examples(["./data/weat_1_aug_postspec_5_new.txt"], "./data/weat_1_prepared_filtered_postspec_5_wo_original.txt")
-  >>> prepare_input_examples(["./data/weat_1_aug_postspec_2_train.txt"], "./data/weat_1_prepared_filtered_postspec_2_wo_original_train.txt")
-  >>> prepare_input_examples(["./data/weat_1_aug_postspec_2_dev.txt"], "./data/weat_1_prepared_filtered_postspec_2_wo_original_dev.txt")
+  #>>> prepare_input_examples(["./data/weat_1_aug_postspec_2_train.txt"], "./data/weat_1_prepared_filtered_postspec_2_wo_original_train.txt")
+  #>>> prepare_input_examples(["./data/weat_1_aug_postspec_2_dev.txt"], "./data/weat_1_prepared_filtered_postspec_2_wo_original_dev.txt")
+  #>>> prepare_input_examples(["./data/weat_8_aug_postspec_2_new.txt"], "./data/weat_8_prepared_filtered_postspec_2_wo_original.txt")
+  >>> prepare_input_examples(["./data/weat_8_aug_postspec_4_new.txt"], "./data/weat_8_prepared_filtered_postspec_4_wo_original.txt")
   """
   t1, t2, a1, a2 = fuse_stimuli(input_paths)
   a = flatten([a1, a2])

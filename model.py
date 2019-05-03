@@ -25,7 +25,7 @@ def hinge_loss(true_ledists, false_ledists, margin):
   return tf.reduce_sum(tf.maximum(tf.subtract(tf.constant(margin, dtype = tf.float32), tf.subtract(false_ledists, true_ledists)), 0.0))
 
 class DebbieModel(object): # setting the adversarial grad scale to -1 turns of the flipping of the gradient
-  def __init__(self, embs, mlp_layers, activation = tf.nn.tanh, scope = "debbie", reg_factor = 0.1, learning_rate = 0.0001, adversarial=False, adversarial_grad_scale=1.0):
+  def __init__(self, embs, mlp_layers, activation = tf.nn.tanh, scope = "debbie", reg_factor = 0.1, learning_rate = 0.0001, adversarial=False, adversarial_grad_scale=1.0, batch_size=0):
     self.embeddings = embs
     self.scope = scope
 
@@ -37,8 +37,8 @@ class DebbieModel(object): # setting the adversarial grad scale to -1 turns of t
 
       self.dropout = tf.placeholder(tf.float32, name="dropout")
 
-      if adversarial:
-        self.adversarial_label = tf.placeholder(tf.int32, [None, ], name="adversarial_label")
+      #if adversarial:
+      #  self.adversarial_label = tf.placeholder(tf.int32, [None, ], name="adversarial_label")
 
     with tf.name_scope(self.scope + "__model"):
       # embedding lookup
@@ -67,7 +67,11 @@ class DebbieModel(object): # setting the adversarial grad scale to -1 turns of t
 
       if adversarial:
         # tensors have to have the same rank
-        self.mapped_targets = tf.stack([self.mapped_target_1, self.mapped_target_2])
+        self.mapped_targets = tf.concat([self.mapped_target_1, self.mapped_target_2], axis=0)
+
+        self.adverserial_labels_1 = tf.zeros(batch_size, tf.int32)
+        self.adversarial_labels_2 = tf.ones(batch_size, tf.int32)
+        self.adversarial_labels = tf.concat([self.adverserial_labels_1, self.adversarial_labels_2], axis=0)
         self.f_targets = flip_gradient(self.mapped_targets, adversarial_grad_scale)
 
         # simple classifier
@@ -84,7 +88,7 @@ class DebbieModel(object): # setting the adversarial grad scale to -1 turns of t
         log_probs = tf.nn.log_softmax(logits, axis=-1)
 
         with tf.variable_scope("adversarial_loss"):
-          one_hot_labels = tf.squeeze(tf.one_hot(self.adversarial_label, depth=2, dtype=tf.float32))
+          one_hot_labels = tf.squeeze(tf.one_hot(self.adversarial_labels, depth=2, dtype=tf.float32))
           per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
           self.l_adverserial = tf.reduce_mean(per_example_loss)
 

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-export CUDA_VISIBLE_DEVICES=0
-OUTPUT_PATH=/work/anlausch/debbie/output/data/postspec_2_wo_original_repr
-INPUT_PATH=/work/anlausch/debbie/data/weat_1_prepared_filtered_postspec_2_wo_original.txt
+export CUDA_VISIBLE_DEVICES=3
+OUTPUT_PATH=/work/anlausch/debbie/output/data/postspec_2_wo_original_splitted
+INPUT_PATH_TRAIN=/work/anlausch/debbie/data/weat_1_prepared_filtered_postspec_2_wo_original_train.txt
+INPUT_PATH_DEV=/work/anlausch/debbie/data/weat_1_prepared_filtered_postspec_2_wo_original_dev.txt
 EMBEDDING_VECTOR_PATH=/work/gglavas/data/word_embs/yacle/fasttext/200K/npformat/ft.wiki.en.300.vectors
 EMBEDDING_VOCAB_PATH=/work/gglavas/data/word_embs/yacle/fasttext/200K/npformat/ft.wiki.en.300.vocab
 
@@ -9,7 +10,8 @@ python exp_debbie_args.py \
     --dropout_keep_probs="[0.9]" \
     --reg_factors="[0.01, 0.05, 0.1, 0.15, 0.2, 0.25]" \
     --output_path=${OUTPUT_PATH} \
-    --input_path=${INPUT_PATH} \
+    --input_path_train=${INPUT_PATH_TRAIN} \
+    --input_path_dev=${INPUT_PATH_DEV} \
     --embedding_vector_path=${EMBEDDING_VECTOR_PATH} \
     --embedding_vocab_path=${EMBEDDING_VOCAB_PATH} \
     |& tee ${OUTPUT_PATH}/log.out

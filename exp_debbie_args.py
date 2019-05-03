@@ -36,6 +36,8 @@ parser.add_argument("--embedding_vector_path", type=str, default=None,
                     help="Embedding vector path", required=True)
 parser.add_argument("--embedding_vocab_path", type=str, default=None,
                     help="Embedding vocab path", required=True)
+parser.add_argument("--adversarial", type=boolean_string, default="False",
+                    help="Whether to train with adverserial component", required=True)
 
 args = parser.parse_args()
 
@@ -43,6 +45,7 @@ args = parser.parse_args()
 drop_vals = eval(args.dropout_keep_probs)
 reg_factors = eval(args.reg_factors)
 output_path = args.output_path
+adversarial = args.adversarial
 if args.input_path is not None:
   input_path = args.input_path
   data_mode = "single"
@@ -67,7 +70,7 @@ for drp, rf in configs:
   print(drp, rf)
   print()
   print()
-  config_string = "drp=" + str(drp) + "_rf=" + str(rf)
+  config_string = "drp=" + str(drp) + "_rf=" + str(rf) + "_adv=" + str(adversarial)
   special_output_path = output_path + "/" + config_string
   create_dir_if_not_exists(special_output_path)
   # TODO: Check if output path exists if not create it
@@ -82,7 +85,8 @@ for drp, rf in configs:
                  "num_dev": 2000,
                  "batch_size": 50,
                  "eval_steps": 1000,
-                 "num_evals_not_better_end": 10}
+                 "num_evals_not_better_end": 10,
+                 "adversarial": adversarial}
 
   print("Loading data...")
   #data = data_handler.load_input_examples("/work/anlausch/debbie/data/weat_1_prepared_filtered_small.txt")
@@ -110,7 +114,7 @@ for drp, rf in configs:
     def __init__(self):
       tf.reset_default_graph()
       # model initialization
-      self.model = model.DebbieModel(vectors, PARAMETERS["mlp_lay"], activation = tf.nn.tanh, scope = "debbie", learning_rate = PARAMETERS["learning_rate"], reg_factor=PARAMETERS["reg_factor"])
+      self.model = model.DebbieModel(vectors, PARAMETERS["mlp_lay"], activation = tf.nn.tanh, scope = "debbie", learning_rate = PARAMETERS["learning_rate"], reg_factor=PARAMETERS["reg_factor"], adversarial=PARAMETERS["adversarial"], batch_size=PARAMETERS["batch_size"])
       self.batch_size = PARAMETERS["batch_size"]
       self.keep_rate = PARAMETERS["dropout"]
       self.eval_steps = PARAMETERS["eval_steps"]

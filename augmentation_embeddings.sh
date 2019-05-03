@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-for weat in 1 2 8 9; do
+for weat in 2 8 9; do
     for k in 2 3 4 5 ; do
         python augmentation.py \
             --path_to_weat=/work/anlausch/debbie/data/weat_${weat}.txt \
