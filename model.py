@@ -69,8 +69,8 @@ class DebbieModel(object): # setting the adversarial grad scale to -1 turns of t
         # tensors have to have the same rank
         self.mapped_targets = tf.concat([self.mapped_target_1, self.mapped_target_2], axis=0)
 
-        self.adverserial_labels_1 = tf.zeros(batch_size, tf.int32)
-        self.adversarial_labels_2 = tf.ones(batch_size, tf.int32)
+        self.adverserial_labels_1 = tf.reduce_mean(tf.zeros_like(self.mapped_target_1, tf.int32), axis=1)
+        self.adversarial_labels_2 = tf.reduce_mean(tf.ones_like(self.mapped_target_2, tf.int32), axis=1)
         self.adversarial_labels = tf.concat([self.adverserial_labels_1, self.adversarial_labels_2], axis=0)
         self.f_targets = flip_gradient(self.mapped_targets, adversarial_grad_scale)
 

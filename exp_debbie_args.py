@@ -181,8 +181,12 @@ for drp, rf in configs:
                        self.model.attribute: aas,
                        self.model.dropout: self.keep_rate }
 
+          if not PARAMETERS["adversarial"]:
+            cl, cle, clr = self.sess.run([self.model.l_total, self.model.l_e, self.model.l_r], feed_dict)
+          else:
+            cl, cle, clr , cla = self.sess.run([self.model.l_total, self.model.l_e, self.model.l_r, self.model.l_adverserial], feed_dict)
+            logg.Log("Total loss: %s, Generator loss: %s, Discriminator loss: %s" % (str(cl), str(cle), str(cla)))
 
-          cl, cle, clr = self.sess.run([self.model.l_total, self.model.l_e, self.model.l_r], feed_dict)
           _, c = self.sess.run([self.model.train_step, self.model.l_total], feed_dict)
 
           epoch_loss += c

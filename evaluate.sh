@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-for output_path_root in "/work/anlausch/debbie/output/data/weat_8_postspec_4_wo_original"; do
-    for config in "drp=0.9_rf=0.01" "drp=0.9_rf=0.05" "drp=0.9_rf=0.1" "drp=0.9_rf=0.15" "drp=0.9_rf=0.2"; do
+for output_path_root in "/work/anlausch/debbie/output/data/weat_8_postspec_4_wo_original_adv"; do
+    for config in "drp=0.9_rf=0.01_adv=True" "drp=0.9_rf=0.1_adv=True" "drp=0.9_rf=0.15_adv=True" "drp=0.9_rf=0.2_adv=True" "drp=0.9_rf=0.25_adv=True" "drp=0.9_rf=0.3_adv=True" "drp=0.9_rf=0.4_adv=True"; do
 
         OUTPUT_PATH=${output_path_root}/${config}
 
