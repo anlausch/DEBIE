@@ -1,0 +1,139 @@
+/home/gglavas/miniconda3/lib/python3.7/site-packages/sklearn/externals/joblib/externals/cloudpickle/cloudpickle.py:47: DeprecationWarning: the imp module is deprecated in favour of importlib; see the module's documentation for alternative uses
+  import imp
+(300, 300) (300, 300)
+(300, 300) (300, 300)
+### ECT ###
+distributional
+SpearmanrResult(correlation=0.4619927971188475, pvalue=0.0007316912788054282)
+
+utah
+SpearmanrResult(correlation=0.9618727490996398, pvalue=1.1194181242963007e-28)
+
+anne
+SpearmanrResult(correlation=0.7759423769507803, pvalue=3.618969797877762e-11)
+
+utah-anne
+SpearmanrResult(correlation=0.9559183673469386, pvalue=3.4073947751684385e-27)
+
+procrustes
+SpearmanrResult(correlation=0.5033853541416566, pvalue=0.00019435978101825196)
+
+utah-procrustes
+SpearmanrResult(correlation=0.9439135654261704, pvalue=9.636148372509392e-25)
+
+procrustes-utah
+SpearmanrResult(correlation=0.8934933973589435, pvalue=2.6131589165518345e-18)
+
+### Regular SimLex ###
+distributional
+0.38691737151501854 0.3822891920029773
+
+utah
+0.38540581959864484 0.3811324164388479
+
+anne
+0.37182287769558475 0.36161499330010494
+
+utah-anne
+0.3731849018604448 0.3627036135250293
+
+procrustes
+0.38204971560019496 0.3744453279583304
+
+utah-procrustes
+0.3879850867719657 0.3788734994417684
+
+procrustes-utah
+0.3798481733935974 0.37256450981317973
+
+### WSIM-353 ###
+distributional
+0.6489025051370672 0.6678075632778911
+
+utah
+0.6486832970743224 0.6681556182538166
+
+anne
+0.5540099933767102 0.5605581166360996
+
+utah-anne
+0.5517984451234126 0.5604237015430953
+
+procrustes
+0.6185612377793972 0.6408942790269176
+
+utah-procrustes
+0.5932086363682766 0.6136284889691244
+
+procrustes-utah
+0.6185677218144162 0.6421721125766389
+
+### Clean SimLex ###
+distributional
+0.39741557712206527 0.3909014352820019
+
+utah
+0.39596033961497357 0.3897423904666058
+
+anne
+0.3823196552293471 0.37033525732212075
+
+utah-anne
+0.3839002349278779 0.3715888099537402
+
+procrustes
+0.39165713038168387 0.3825610622476526
+
+utah-procrustes
+0.3983354663425137 0.3876955251064279
+
+procrustes-utah
+0.3894536107549673 0.38067893534050234
+
+### SVM ###
+distributional
+1.0
+
+utah
+0.5
+
+anne
+1.0
+
+utah-anne
+0.5
+
+procrustes
+1.0
+
+utah-procrustes
+0.5
+
+procrustes-utah
+0.8913043478260869
+
+### KMeans++ ###
+distributional
+0.9565217391304348
+
+utah
+0.5652173913043478
+
+anne
+0.9565217391304348
+
+utah-anne
+0.5434782608695652
+
+procrustes
+0.9565217391304348
+
+utah-procrustes
+0.5869565217391305
+
+procrustes-utah
+0.8695652173913043
+
+### WEAT ###
+Computing similarities...
+To compute WEAT test
