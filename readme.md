@@ -52,12 +52,17 @@ All code related to the evaluation framework can be found in `./evaluation`. The
 functions for running the following tests:
 
 - Implicit Bias Tests
+
         - ... clustering with KMeans++
         - ... classification with SVM
+
 - Explicit Bias Tests
+
         - Embedding Coherence Test
         - Bias Analogy Test
+
 - Semantic Quality Evaluation
+
         - SimLex-999 (Test data not provided in this repo)
         - WordSim-543 (Test data not provided in this repo)
 
