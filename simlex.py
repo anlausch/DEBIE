@@ -3,6 +3,7 @@ import scipy.stats as stats
 import numpy as np
 import pickle
 import argparse
+from util import load_specialized_embeddings
 
 def boolean_string(s):
   if s not in {'False', 'True', 'false', 'true'}:
@@ -43,7 +44,7 @@ def load_vectors_goran(path):
   return np.load(path)
 
 
-def run_evaluation(vocab_path, vector_path, output_path, type="simlex"):
+def run_evaluation(vocab_path, vector_path, output_path, type="simlex", specialized=False):
   """
   :param vocab_path:
   :param vector_path:
@@ -55,10 +56,16 @@ def run_evaluation(vocab_path, vector_path, output_path, type="simlex"):
     if type == "simlex":
       f.write("SimLex-999\n")
       data = load_benchmark("/work/anlausch/SimLex-999/SimLex-999.txt")
+    elif type == "simlex-gn-full":
+      f.write("SimLex-GN-full\n")
+      data = load_benchmark("/work/anlausch/SimLex-999/SimLex-GN-full.txt")
     elif type == "simverb":
       f.write("SimVerb-3500\n")
       data = load_benchmark("/home/anlausch/SimVerb-3500/SimVerb-3500.txt")
-    vocab = load_vocab_goran(vocab_path)
+    if not specialized:
+      vocab = load_vocab_goran(vocab_path)
+    else:
+      ed, vocab_list, vectors, vocab = load_specialized_embeddings(vocab_path)
     vectors = load_vectors_goran(vector_path)
     cos = cosine(vectors, vectors)
 
@@ -83,12 +90,17 @@ def main():
                       help="Embedding vector path", required=True)
   parser.add_argument("--embedding_vocab_path", type=str, default=None,
                       help="Embedding vocab path", required=True)
+  parser.add_argument("--specialized_embeddings", type=boolean_string, default="False",
+                      help="Whether the embeddings are specialized (affects how to load them)", required=False)
 
   args = parser.parse_args()
   output_path_simlex = args.output_path + "/simlex.txt"
   output_path_simverb = args.output_path + "/simverb.txt"
-  run_evaluation(args.embedding_vocab_path, args.embedding_vector_path, output_path=output_path_simlex, type="simlex")
-  run_evaluation(args.embedding_vocab_path, args.embedding_vector_path, output_path=output_path_simverb, type="simverb")
+  output_path_simlex_gn_full = args.output_path + "/simlex_gn_full.txt"
+  #run_evaluation(args.embedding_vocab_path, args.embedding_vector_path, output_path=output_path_simlex_gn_full, type="simlex-gn-full")
+  run_evaluation(args.embedding_vocab_path, args.embedding_vector_path, output_path=output_path_simlex, type="simlex", specialized=args.specialized_embeddings)
+  run_evaluation(args.embedding_vocab_path, args.embedding_vector_path, output_path=output_path_simverb, type="simverb", specialized=args.specialized_embeddings)
+
 
 
 if __name__=="__main__":

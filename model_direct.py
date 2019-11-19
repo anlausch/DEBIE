@@ -60,31 +60,8 @@ class DebbieModel(object): # setting the adversarial grad scale to -1 turns of t
                  + tf.reduce_sum(cosine_distance(self.embs_target_2, self.mapped_target_2)) \
                  + tf.reduce_sum(cosine_distance(self.embs_attribute, self.mapped_attribute))
 
-      # tensors have to have the same rank
-      self.mapped_targets = tf.concat([self.mapped_target_1, self.mapped_target_2], axis=0)
-
-      self.adverserial_labels_1 = tf.reduce_mean(tf.zeros_like(self.mapped_target_1, tf.int32), axis=1)
-      self.adversarial_labels_2 = tf.reduce_mean(tf.ones_like(self.mapped_target_2, tf.int32), axis=1)
-      self.adversarial_labels = tf.concat([self.adverserial_labels_1, self.adversarial_labels_2], axis=0)
-      self.f_targets = flip_gradient(self.mapped_targets, adversarial_grad_scale)
-
-      # simple classifier
-      hidden_size = self.f_targets.shape[-1].value
-
-      output_weights = tf.get_variable(
-        "output_weights", [2, hidden_size],
-        initializer=tf.truncated_normal_initializer(stddev=0.02))
-
-      output_bias = tf.get_variable(
-        "output_bias", [2], initializer=tf.zeros_initializer())
-      logits = tf.matmul(self.f_targets, output_weights, transpose_b=True)
-      logits = tf.nn.bias_add(logits, output_bias)
-      log_probs = tf.nn.log_softmax(logits, axis=-1)
-
-      with tf.variable_scope("adversarial_loss"):
-        one_hot_labels = tf.squeeze(tf.one_hot(self.adversarial_labels, depth=2, dtype=tf.float32))
-        per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
-        self.l_i = tf.reduce_mean(per_example_loss)
+      # new implicit debiasing objective
+      self.l_i = tf.reduce_sum(cosine_distance(self.mapped_target_1, self.mapped_target_2))
 
       self.l_total = e_factor * self.l_e + i_factor * self.l_i + reg_factor * self.l_r
       

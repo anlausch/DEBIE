@@ -1,4 +1,3 @@
-import model
 import numpy as np
 import tensorflow as tf
 import pickle
@@ -7,9 +6,9 @@ import random
 import logger
 import os
 import itertools
-import data_handler
+from util import load_specialized_embeddings
 import argparse
-
+import data_handler
 
 def boolean_string(s):
   if s not in {'False', 'True', 'false', 'true'}:
@@ -36,16 +35,23 @@ parser.add_argument("--embedding_vector_path", type=str, default=None,
                     help="Embedding vector path", required=True)
 parser.add_argument("--embedding_vocab_path", type=str, default=None,
                     help="Embedding vocab path", required=True)
-parser.add_argument("--adversarial", type=boolean_string, default="False",
-                    help="Whether to train with adverserial component", required=True)
+parser.add_argument("--e_factors", type=str, default=None,
+                    help="List of weights for the explicit debiasing objective", required=True)
+parser.add_argument("--i_factors", type=str, default=None,
+                    help="List of weights for the implicit debiasing objective", required=True)
+parser.add_argument("--specialized_embeddings", type=boolean_string, default=False,
+                    help="Whether the input embeddings are specialized (requires a different way of loading them)", required=False)
+parser.add_argument("--direct_implicit_objective", type=boolean_string, default=False,
+                    help="Whether to use the adversarial (False) or the direct implicit debiasing objective (True)", required=False)
 
 args = parser.parse_args()
 
 
 drop_vals = eval(args.dropout_keep_probs)
 reg_factors = eval(args.reg_factors)
+i_factors = eval(args.i_factors)
+e_factors = eval(args.e_factors)
 output_path = args.output_path
-adversarial = args.adversarial
 if args.input_path is not None:
   input_path = args.input_path
   data_mode = "single"
@@ -57,20 +63,26 @@ else:
   raise ValueError("Either a single file or a train and a dev file need to be supplied")
 embedding_vector_path = args.embedding_vector_path
 embedding_vocab_path = args.embedding_vocab_path
+specialized_embeddings = args.specialized_embeddings
+direct_implicit_objective = args.direct_implicit_objective
+if direct_implicit_objective:
+  import model_direct as model
+else:
+  import model
 
 random.seed(1000)
 
 create_dir_if_not_exists(output_path)
-configs = list(itertools.product(drop_vals, reg_factors))
+configs = list(itertools.product(drop_vals, reg_factors, e_factors, i_factors))
 print(configs[0])
 print(len(configs))
 
-for drp, rf in configs:
+for drp, rf, e_f, i_f in configs:
   print("Configuration: ")
-  print(drp, rf)
+  print(drp, rf, e_f, i_f)
   print()
   print()
-  config_string = "drp=" + str(drp) + "_rf=" + str(rf) + "_adv=" + str(adversarial)
+  config_string = "drp=" + str(drp) + "_rf=" + str(rf) + "_ef=" + str(e_f) + "_if=" + str(i_f)
   special_output_path = output_path + "/" + config_string
   create_dir_if_not_exists(special_output_path)
   # TODO: Check if output path exists if not create it
@@ -86,10 +98,10 @@ for drp, rf in configs:
                  "batch_size": 50,
                  "eval_steps": 1000,
                  "num_evals_not_better_end": 10,
-                 "adversarial": adversarial}
+                 "e_f": e_f,
+                 "i_f": i_f}
 
   print("Loading data...")
-  #data = data_handler.load_input_examples("/work/anlausch/debbie/data/weat_1_prepared_filtered_small.txt")
   if data_mode == "single":
     print("Running single file data mode")
     data = data_handler.load_input_examples(input_path)
@@ -103,8 +115,12 @@ for drp, rf in configs:
     dev = data_handler.load_input_examples(input_path_dev)
 
   print("Loading embeddings...")
-  vectors = np.load(embedding_vector_path)
-  vocab = pickle.load(open(embedding_vocab_path,"rb"))
+  if not specialized_embeddings:
+    vectors = np.load(embedding_vector_path, allow_pickle=True).astype(np.float32)
+    vocab = pickle.load(open(embedding_vocab_path,"rb"))
+  else:
+    ed, vocab_list, vectors, vocab = load_specialized_embeddings(embedding_vector_path)
+
   reshaped_vectors = vectors
 
   logg = logger.Logger(PARAMETERS["log_path"])
@@ -114,7 +130,7 @@ for drp, rf in configs:
     def __init__(self):
       tf.reset_default_graph()
       # model initialization
-      self.model = model.DebbieModel(vectors, PARAMETERS["mlp_lay"], activation = tf.nn.tanh, scope = "debbie", learning_rate = PARAMETERS["learning_rate"], reg_factor=PARAMETERS["reg_factor"], adversarial=PARAMETERS["adversarial"], batch_size=PARAMETERS["batch_size"])
+      self.model = model.DebbieModel(vectors, PARAMETERS["mlp_lay"], activation = tf.nn.tanh, scope = "debbie", learning_rate = PARAMETERS["learning_rate"], reg_factor=PARAMETERS["reg_factor"], e_factor=PARAMETERS["e_f"], i_factor=PARAMETERS["i_f"])
       self.batch_size = PARAMETERS["batch_size"]
       self.keep_rate = PARAMETERS["dropout"]
       self.eval_steps = PARAMETERS["eval_steps"]
@@ -127,12 +143,14 @@ for drp, rf in configs:
     def get_minibatch(self, triples):
         t1s = []; t2s = []; aas = []
         for t in triples:
-          ind_t1 = vocab[t.t1]
-          ind_t2 = vocab[t.t2]
-          ind_a = vocab[t.a]
-          t1s.append(ind_t1)
-          t2s.append(ind_t2)
-          aas.append(ind_a)
+          # This is only relevant for the postspec embedding space as I want to use exactly the same data, but I filtered the vocab with the original fasttext top 200k
+          if t.t1 in vocab and t.t2 in vocab and t.a in vocab:
+            ind_t1 = vocab[t.t1]
+            ind_t2 = vocab[t.t2]
+            ind_a = vocab[t.a]
+            t1s.append(ind_t1)
+            t2s.append(ind_t2)
+            aas.append(ind_a)
         return t1s, t2s, aas
 
     def train_model(self):
@@ -181,11 +199,9 @@ for drp, rf in configs:
                        self.model.attribute: aas,
                        self.model.dropout: self.keep_rate }
 
-          if not PARAMETERS["adversarial"]:
-            cl, cle, clr = self.sess.run([self.model.l_total, self.model.l_e, self.model.l_r], feed_dict)
-          else:
-            cl, cle, clr , cla = self.sess.run([self.model.l_total, self.model.l_e, self.model.l_r, self.model.l_adverserial], feed_dict)
-            logg.Log("Total loss: %s, Generator loss: %s, Discriminator loss: %s" % (str(cl), str(cle), str(cla)))
+
+          cl, cle, clr, cli = self.sess.run([self.model.l_total, self.model.l_e, self.model.l_r, self.model.l_i], feed_dict)
+          logg.Log("Total loss: %s, Explicit loss: %s, Implicit loss: %s, Regularization loss: %s" % (str(cl), str(cle), str(cli), str(clr)))
 
           _, c = self.sess.run([self.model.train_step, self.model.l_total], feed_dict)
 
