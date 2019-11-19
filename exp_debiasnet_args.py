@@ -66,9 +66,9 @@ embedding_vocab_path = args.embedding_vocab_path
 specialized_embeddings = args.specialized_embeddings
 direct_implicit_objective = args.direct_implicit_objective
 if direct_implicit_objective:
-  import model_direct as model
+  import debiasnet_direct as model
 else:
-  import model
+  import debiasnet as model
 
 random.seed(1000)
 
@@ -130,7 +130,7 @@ for drp, rf, e_f, i_f in configs:
     def __init__(self):
       tf.reset_default_graph()
       # model initialization
-      self.model = model.DebbieModel(vectors, PARAMETERS["mlp_lay"], activation = tf.nn.tanh, scope = "debbie", learning_rate = PARAMETERS["learning_rate"], reg_factor=PARAMETERS["reg_factor"], e_factor=PARAMETERS["e_f"], i_factor=PARAMETERS["i_f"])
+      self.model = model.DebiasNetModel(vectors, PARAMETERS["mlp_lay"], activation = tf.nn.tanh, scope ="debbie", learning_rate = PARAMETERS["learning_rate"], reg_factor=PARAMETERS["reg_factor"], e_factor=PARAMETERS["e_f"], i_factor=PARAMETERS["i_f"])
       self.batch_size = PARAMETERS["batch_size"]
       self.keep_rate = PARAMETERS["dropout"]
       self.eval_steps = PARAMETERS["eval_steps"]

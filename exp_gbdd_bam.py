@@ -1,8 +1,9 @@
 import utils
-import debiasing
-import eval
+import bam
+import gbdd
+import evaluation.eval as eval
 import numpy as np
-import weat
+import evaluation.weat as weat
 from sys import stdin
 import sys
 
@@ -142,22 +143,22 @@ for t1 in tgs_1_aug:
     eq_pairs.append((t1, t2))
 
 ### Transformation
-v_b = debiasing.get_bias_direction(eq_pairs, vecs, vecs_norm, vocab, vocab_inv)
-utah = debiasing.debias_direction_linear(v_b, vecs_norm)
+v_b = gbdd.get_bias_direction(eq_pairs, vecs, vecs_norm, vocab, vocab_inv)
+utah = gbdd.debias_direction_linear(v_b, vecs_norm)
 
 if not lang_transfer:
-  v_b_anne = debiasing.get_bias_direction(eq_pairs, vecs_anne, vecs_norm_anne, vocab, vocab_inv)
-  utah_anne = debiasing.debias_direction_linear(v_b_anne, vecs_norm_anne)
+  v_b_anne = gbdd.get_bias_direction(eq_pairs, vecs_anne, vecs_norm_anne, vocab, vocab_inv)
+  utah_anne = gbdd.debias_direction_linear(v_b_anne, vecs_norm_anne)
 else:
-  v_b_anne = debiasing.get_bias_direction(eq_pairs, vecs_anne_srclang, vecs_norm_anne_srclang, vocab, vocab_inv)
-  utah_anne = debiasing.debias_direction_linear(v_b_anne, vecs_norm_anne)
+  v_b_anne = gbdd.get_bias_direction(eq_pairs, vecs_anne_srclang, vecs_norm_anne_srclang, vocab, vocab_inv)
+  utah_anne = gbdd.debias_direction_linear(v_b_anne, vecs_norm_anne)
   
-proc, proc_proj_mat = debiasing.debias_proc(eq_pairs, vecs, vocab)
+proc, proc_proj_mat = bam.debias_proc(eq_pairs, vecs, vocab)
 
-v_b_proc = debiasing.get_bias_direction(eq_pairs, proc, proc, vocab, vocab_inv)
-proc_utah = debiasing.debias_direction_linear(v_b_proc, proc)
+v_b_proc = gbdd.get_bias_direction(eq_pairs, proc, proc, vocab, vocab_inv)
+proc_utah = gbdd.debias_direction_linear(v_b_proc, proc)
 
-utah_proc, utah_proc_proj_mat = debiasing.debias_proc(eq_pairs, utah, vocab)
+utah_proc, utah_proc_proj_mat = bam.debias_proc(eq_pairs, utah, vocab)
 
 ### language transfer
 if lang_transfer:
@@ -166,12 +167,12 @@ if lang_transfer:
   attributes_1 = attributes_1_tgt
   attributes_2 = attributes_2_tgt
 
-  utah_tgt = debiasing.debias_direction_linear(v_b, vecs_tgt_norm)
+  utah_tgt = bam.debias_direction_linear(v_b, vecs_tgt_norm)
 
   proc_tgt = np.matmul(vecs_tgt, proc_proj_mat)
   proc_tgt = (proc_tgt + vecs_tgt) / 2
 
-  proc_utah_tgt = debiasing.debias_direction_linear(v_b_proc, proc_tgt)
+  proc_utah_tgt = gbdd.debias_direction_linear(v_b_proc, proc_tgt)
   
   utah_proc_tgt = np.matmul(utah_tgt, utah_proc_proj_mat)
   utah_proc_tgt = (utah_proc_tgt + utah_tgt) / 2

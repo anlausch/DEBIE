@@ -1,3 +1,7 @@
+'''
+Used to prepare data for input to debiasnet, e.g. preparing training constraints
+'''
+
 import codecs
 from itertools import product
 import pickle
@@ -31,7 +35,7 @@ def split_weat_in_train_dev(input_paths, output_train, output_dev):
   :param output_train:
   :param output_dev:
   :return:
-  >>> split_weat_in_train_dev(["./data/weat_1_aug_postspec_2_new.txt"], "./data/weat_1_aug_postspec_2_train.txt", "./data/weat_1_aug_postspec_2_dev.txt")
+  >>> split_weat_in_train_dev(["./data/weat_1_aug_postspec_2.txt"], "./data/weat_1_aug_postspec_2_train.txt", "./data/weat_1_aug_postspec_2_dev.txt")
   """
   t1, t2, a1, a2 = fuse_stimuli(input_paths)
   weat_dict = {}
@@ -50,7 +54,7 @@ def split_weat_in_train_dev(input_paths, output_train, output_dev):
 
 
 
-def filter_vocabulary(term_list, vocab_path="/work/gglavas/data/word_embs/yacle/fasttext/200K/npformat/ft.wiki.en.300.vocab"):
+def filter_vocabulary(term_list, vocab_path="./data/word_embs/yacle/fasttext/200K/npformat/ft.wiki.en.300.vocab"):
   vocab = pickle.load(open(vocab_path, "rb"))
   new_term_list = []
   for t in term_list:
@@ -62,7 +66,7 @@ def filter_vocabulary(term_list, vocab_path="/work/gglavas/data/word_embs/yacle/
 
 
 def prepare_input_examples(input_paths, output_path, random_attributes=False,
-                           sampling_vocab_path="/work/gglavas/data/word_embs/yacle/fasttext/200K/npformat/ft.wiki.en.300.vocab",
+                           sampling_vocab_path="./data/word_embs/yacle/fasttext/200K/npformat/ft.wiki.en.300.vocab",
                            original_weat_path="", k=60, switch_targets_and_attributes=False):
   """
   :param paths:
@@ -89,7 +93,7 @@ def prepare_input_examples(input_paths, output_path, random_attributes=False,
   random_attributes=True, original_weat_path="./data/weat_8.txt", k=60, switch_targets_and_attributes=False)
   #>>> prepare_input_examples(["./data/weat_8_aug_postspec_4_new.txt"], "./data/weat_8_prepared_filtered_postspec_4_wo_original_random_switched.txt", \
   random_attributes=True, original_weat_path="./data/weat_8.txt", k=60, switch_targets_and_attributes=True)
-  >>> prepare_input_examples(["./data/weat_8_aug_postspec_4_new.txt"], "./data/weat_8_prepared_filtered_postspec_4_wo_original_switched.txt", switch_targets_and_attributes=True)
+  >>> prepare_input_examples(["./data/weat_8_aug_postspec_4.txt"], "./data/weat_8_prepared_filtered_postspec_4_wo_original_switched.txt", switch_targets_and_attributes=True)
   """
   t1, t2, a1, a2 = fuse_stimuli(input_paths)
   if switch_targets_and_attributes:

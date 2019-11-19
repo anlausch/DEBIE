@@ -1,263 +1,145 @@
-from nltk.corpus import stopwords
-import re
-import numpy as np
-import math
-import os
-from nltk import word_tokenize
-from nltk.stem import WordNetLemmatizer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from collections import defaultdict
-import nltk
+from nltk.corpus import wordnet as wn
+from sys import stdin
 import codecs
-import gensim
-from nltk.stem import WordNetLemmatizer
-from nltk.stem import PorterStemmer
-import regex
+import numpy as np
+import pickle
 
+# IO
 
-def remove_stop_words_from_sentence_list(texts):
-    english_stopwords = stopwords.words("english")
-    pattern = r'\b(' + r'|'.join(english_stopwords) + r')\b\s*'
-    return [re.sub(pattern,'', text, flags=re.IGNORECASE) for text in texts]
+def load_lines(filepath):
+  return [l.strip() for l in list(codecs.open(filepath, "r", encoding = 'utf8', errors = 'replace').readlines())]
 
-'''Pattern explained:
-\( citation markers start with parentheses
-then the author group starts
-[A-Z] author names start with a capital letter
-[a-z]+ followed by at least one lowercase letter
-then there is a whitespace except if there are no other authors
-if there are other authors we habe (and) or (et al.)
-there can be more than one author
-before the year, there is a comma and a whitespace
-(18|19|20)\d\d then a reasonable date
-optionally a second citation follows, if yes, we need a semicolon and a soace (; )?
-# )+ for multiple citations
-#\) closing parantheses
-'''
-def remove_citation_marker(s):
-    #pattern = r'\(((([A-Z][a-z]+)( )*(and)*( )*)+(et al.)*, (18|19|20)\d\d(; )?)+\)'
-    pattern = regex.compile(r'\(?((([A-Z][a-z]+)( )*(and)*( )*)+(et al.)*,? \(?(18|19|20)\d\d\)?(;*,* )?)+\)?')
-    s = regex.sub(pattern, '', s)
-    return s
+def write_list(path, list):
+	f = codecs.open(path,'w',encoding='utf8')
+	for l in list:
+		f.write(l + "\n")
+	f.close()
 
+def load_vocab(path, inverse = False):
+  vocab = pickle.load(open(path,"rb"))
+  if inverse:
+    vocab_inv = {v : k for k, v in vocab.items()}
+    return vocab, vocab_inv
+  else:
+    return vocab
 
-def remove_stop_words_from_single_sentence(text):
-    english_stopwords = stopwords.words("english")
-    pattern = r'\b(' + r'|'.join(english_stopwords) + r')\b\s*'
-    return re.sub(pattern,'', text, flags=re.IGNORECASE)
+def load_vectors(path, normalize = False):
+  vecs = np.load(path)
+  if normalize:
+    vecs_norm = vecs / np.transpose([np.linalg.norm(vecs, 2, 1)])
+    return vecs, vecs_norm
+  else:
+    return vecs
 
+# WN
 
-def compute_standard_error(prediction):
-    prediction = list(map(int, prediction))
-    return float(np.std(prediction)) / math.sqrt(len(prediction))
+def add_lemmas(syn, word, lista):
+  for l in syn.lemmas():
+    if l.name() != word and not "_" in l.name(): 
+      lista.append(l.name())  
 
+def fetch(word):
+  synsets = wn.synsets(word)
+  syns_list = [] 
+  hypers_list = []
+  cohyp_list = []
+  hypo_list = [] 
+  if synsets:
+    # synonyms
+    syn = synsets[0]
+    add_lemmas(syn, word, syns_list) 
+    
+    # hypernyms
+    hypers = syn.hypernyms()
+    for h in hypers:
+      add_lemmas(h, word, hypers_list)
 
-def get_write_mode(path):
-    if os.path.exists(path):
-        return 'a'  # append if already exists
-    else:
-        return 'w'  # make a new file if not
+      # cohyponyms
+      cohyps = h.hyponyms()
+      for ch in cohyps:
+        if ch != syn:
+          add_lemmas(ch, word, cohyp_list)
+  
+    # hyponyms
+    hypos = syn.hyponyms()
+    
+    for h in hypos:
+      add_lemmas(h, word, hypo_list)
+  
+  syns_list = list(set(syns_list)) 
+  hypers_list = list(set(hypers_list))
+  cohyp_list = list(set(cohyp_list))
+  hypo_list = list(set(hypo_list))
+  return syns_list, hypers_list, cohyp_list, hypo_list
 
+def fetch_list(word_list):    
+  results = {}
+  for word in word_list:
+    synl, hyperl, cohypl, hypol = fetch(word)
+    print(word)
+    print("Syns: " + " ".join(synl))
+    print("Hypers: " + " ".join(hyperl))
+    print("Cohyps: " + " ".join(cohypl))
+    print("Hypos: " + " ".join(hypol))
+    results[word] = (synl, hyperl, hypol, cohypl)
+  return results
 
-def shuffle_data(x, y):
-    np.random.seed(10)
-    shuffle_indices = np.random.permutation(np.arange(len(y)))
-    return x[shuffle_indices], y[shuffle_indices]
+def flatten_all_augments(results):
+  flat_list = []
+  for w in results:
+    flat_list.extend(results[w][0])
+    flat_list.extend(results[w][1])  
+    flat_list.extend(results[w][2])
+    flat_list.extend(results[w][3])
+  flat_list = list(set(flat_list))
+  flat_list = [x for x in flat_list if x not in results]
+  return flat_list
+      
+# vector spaces
 
+def similarity(w1, w2, vocab, vectors, normalized = False):
+  if w1 and w2 in vocab:
+    cs = np.dot(vectors[vocab[w1]], vectors[vocab[w2]])
+    if not normalized:
+      cs = cs / (np.linalg.norm(vectors[vocab[w1]]) * np.linalg.norm(vectors[vocab[w2]])) 
+  else:
+    return None
 
-class LemmaTokenizer(object):
-    def __init__(self):
-        self.wnl = WordNetLemmatizer()
-    def __call__(self, doc):
-        return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
+def diffs_search(vocab_inv, vecs, vecs_norm, seed, limit = 2000, sim_thold = 0.3):
+  pairs = []
+  if not limit:
+    limit = len(vecs)
 
+  for i in range(limit):
+    print(i)
+    # assuming vectors are L2-normalized (cos = dot)
+    vec_src = vecs_norm[i]
+    # finding indices where the similarity with the query vector is above 
+    cosines = np.dot(vec_src, np.transpose(vecs_norm)) # np.sqrt(np.linalg.norm(vec_src - vecs, axis = 1)) #
+    inds = np.where(cosines > sim_thold)[0]
+    if len(inds) == 1:
+      continue
+    inds = np.delete(inds, np.where(inds == i)[0])
 
-# returns a dictionary of embeddings
-def load_embeddings(path, word2vec=False, rdf2vec=False):
-    """
-    >>> load_embeddings("/work/anlausch/glove_twitter/glove.twitter.27B.200d.txt")
-    :param path:
-    :param word2vec:
-    :param rdf2vec:
-    :return:
-    """
-    embbedding_dict = {}
-    if word2vec == False and rdf2vec == False:
-        with codecs.open(path, "rb", "utf8", "ignore") as infile:
-            for line in infile:
-                try:
-                    parts = line.split()
-                    word = parts[0]
-                    nums = [float(p) for p in parts[1:]]
-                    embbedding_dict[word] = nums
-                except Exception as e:
-                    print(line)
-                    continue
-        return embbedding_dict
-    elif word2vec == True:
-        #Load Google's pre-trained Word2Vec model.
-        if os.name != 'nt':
-            model = gensim.models.KeyedVectors.load_word2vec_format(path, binary=True)
-        else:
-            model = gensim.models.Word2Vec.load_word2vec_format(path, binary=True)
-        return model
-    elif rdf2vec == True:
-        #Load Petars model.
-        model = gensim.models.Word2Vec.load(path)
-        return model
+    diffs_i = vecs[i] - np.array([vecs[ind] for ind in inds])
+    sims_diffs = np.linalg.norm(diffs_i - seed, axis = 1)
+    ind_min = np.argmin(sims_diffs)
+    dist_min = sims_diffs[ind_min]
+    
+    real_ind_min = inds[ind_min]
+    pair = (vocab_inv[i], vocab_inv[real_ind_min], dist_min)
+    pairs.append(pair)
 
-
-class MeanEmbeddingVectorizer(object):
-    def __init__(self, embds):
-        self.embds = embds
-        #self.dim = next(iter(embds))
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X):
-        #return np.array([np.mean([self.embds[w] for w in words if w in self.embds]
-        #                            or [np.zeros(self.dim)], axis=0) for words in X])
-        sentence_vectors = [np.mean([self.embds[word] for word in nltk.word_tokenize(sentence) if word in self.embds], axis=0) for sentence in X]
-        for i, sentence_vector in enumerate(sentence_vectors):
-            if type(sentence_vector) is not np.ndarray:
-                print("type not np.ndarray")
-                sentence_vectors[i] = np.array([0.0 for j in range(0, len(sentence_vectors[0]))], dtype=float)
-        return sentence_vectors
-
-
-class MeanEmbeddingVectorizerSingleSentence(object):
-    def __init__(self, embds):
-        self.embds = embds
-        #self.dim = next(iter(embds))
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X):
-        #return np.array([np.mean([self.embds[w] for w in words if w in self.embds]
-        #                            or [np.zeros(self.dim)], axis=0) for words in X])
-        sentence_vector = np.mean([self.embds[word] for word in nltk.word_tokenize(X) if word in self.embds], axis=0)
-        return sentence_vector
-
-
-class MeanDBpediaEmbeddingVectorizerSingleSentence(object):
-    def __init__(self, embds):
-        self.embds = embds
-        #self.dim = next(iter(embds))
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X):
-        #return np.array([np.mean([self.embds[w] for w in words if w in self.embds]
-        #                            or [np.zeros(self.dim)], axis=0) for words in X])
-        dbr_tokens = ["dbr:" + str(word) for word in nltk.word_tokenize(X)]
-        sentence_vector = np.mean([self.embds[word] for word in dbr_tokens if word in self.embds], axis=0)
-        if not isinstance(sentence_vector, np.float64):
-            sentence_vector = np.array([number if not math.isnan(number) else 0 for number in sentence_vector])
-        else:
-            np.array(sentence_vector)
-        return sentence_vector
-
-
-class TfidfEmbeddingVectorizer(object):
-    def __init__(self, embds, tfidf_vectorizer):
-        self.embds = embds
-        self.tfidf_vectorizer = tfidf_vectorizer
-        max_idf = max(self.tfidf_vectorizer.idf_)
-        self.word2weight = defaultdict(
-            lambda: max_idf,
-            [(w,  self.tfidf_vectorizer.idf_[i]) for w, i in  self.tfidf_vectorizer.vocabulary_.items()])
-
-    def transform(self, X):
-        sentence_vectors = []
-        for x in X:
-            tokens = nltk.word_tokenize(x)
-            sentence_vector = np.mean([[value * self.word2weight[word] * tokens.count(word) for value in self.embds[word]] for word in tokens if word in self.embds], axis=0)
-            sentence_vectors.append(sentence_vector)
-        return sentence_vectors
-
-
-class TfidfEmbeddingVectorizerSingleSentence(object):
-    def __init__(self, embds, tfidf_vectorizer):
-        self.embds = embds
-        self.word2weight = None
-        self.tfidf_vectorizer = tfidf_vectorizer
-        max_idf = max(self.tfidf_vectorizer.idf_)
-        self.word2weight = defaultdict(
-            lambda: max_idf,
-            [(w,  self.tfidf_vectorizer.idf_[i]) for w, i in  self.tfidf_vectorizer.vocabulary_.items()])
-
-    def transform(self, X):
-        tokens = nltk.word_tokenize(X)
-        sentence_vector = np.mean([[value * self.word2weight[word] * tokens.count(word) for value in self.embds[word]] for word in tokens if word in self.embds], axis=0)
-        return sentence_vector
-
-
-'''
-performs removal of citation markers, removal of punctuation, lemmatization and stopword removal for a given string s
-'''
-def preprocess_string_tfidf(s):
-    #s = remove_citation_marker(s)
-    #s = re.sub(r'[^\w\s]', ' ', s).strip()
-    try:
-        tokenized_string = [token for token in word_tokenize(s.lower())]
-    except Exception as e:
-        print(e)
-        print(word_tokenize(s.lower))
-    return ' '.join(tokenized_string)
-
-'''
-performs removal of citation markers, removal of punctuation, lemmatization and stopword removal for a given string s
-'''
-def preprocess_string(s):
-    #s = remove_citation_marker(s)
-    s = re.sub(r'[^\w\s]', ' ', s).strip()
-    wordnet_lemmatizer = WordNetLemmatizer()
-    #stemmer = PortStemmer()
-    english_stopwords = stopwords.words("english")
-    tokenized_string = [wordnet_lemmatizer.lemmatize(token) for token in word_tokenize(s.lower()) if token not in english_stopwords]
-    return ' '.join(tokenized_string)
-
-'''
-performs removal of citation markers, removal of punctuation, lemmatization and stopword removal for a given list of strings
-'''
-def preprocess_string_list(s_list):
-    return [preprocess_string(s) for s in s_list]
-
-def preprocess_string_list_tfidf(s_list):
-    return [preprocess_string_tfidf(s) for s in s_list]
-
-
-def batch_iter(data, batch_size, num_epochs, shuffle=False):
-    """
-    Generates a batch iterator for a dataset.
-    """
-    data_size = len(data)
-    num_batches_per_epoch = int((len(data)-1)/batch_size) + 1
-    for epoch in range(num_epochs):
-        # Shuffle the data at each epoch
-        if shuffle:
-            shuffle_indices = np.random.permutation(np.arange(data_size))
-            shuffled_data = data[shuffle_indices]
-        else:
-            shuffled_data = data
-        for batch_num in range(num_batches_per_epoch):
-            start_index = batch_num * batch_size
-            end_index = min((batch_num + 1) * batch_size, data_size)
-            yield shuffled_data[start_index:end_index]
-
-
-def align_vocab_and_embd(embd_dict, vocab):
-    embd_list = []
-    empty_list = []
-    for i,token in enumerate(vocab):
-        if token in embd_dict:
-            float_embd = np.array([float(x) for x in embd_dict[token]])
-            embd_list.append(float_embd)
-        else:
-            empty_embd = np.random.uniform(-1.0, 1.0, len(embd_dict["word"]))
-            embd_list.append(empty_embd)
-            empty_list.append(i)
-    return np.array(embd_list), np.array(empty_list)
+  scores = np.array([x[2] for x in pairs])
+  order = np.argsort(scores)
+  sorted_pairs = [pairs[p] for p in order]
+  return sorted_pairs
+    
+def projection_bolukbasi(seed_words, vocab, vocab_inv, vecs_norm):
+  seed_dif = vecs_norm[vocab[seed_words[0]]] - vecs_norm[vocab[seed_words[1]]]
+  scores = np.dot(seed_dif, np.transpose(vecs_norm))
+  order = np.argsort(scores)
+  sorted_pairs = [(vocab_inv[i], scores[i]) for i in order]
+  return sorted_pairs
+    
+    

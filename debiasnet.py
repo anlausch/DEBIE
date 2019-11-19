@@ -1,3 +1,6 @@
+"""
+Full debiasnet model
+"""
 import tensorflow as tf
 from flip_gradient import flip_gradient
 
@@ -24,8 +27,8 @@ def le_distance(t1, t2, asym_fact):
 def hinge_loss(true_ledists, false_ledists, margin):
   return tf.reduce_sum(tf.maximum(tf.subtract(tf.constant(margin, dtype = tf.float32), tf.subtract(false_ledists, true_ledists)), 0.0))
 
-class DebbieModel(object): # setting the adversarial grad scale to -1 turns of the flipping of the gradient
-  def __init__(self, embs, mlp_layers, activation = tf.nn.tanh, scope = "debbie", reg_factor = 0.1, learning_rate = 0.0001, adversarial_grad_scale=1.0, i_factor=1.0, e_factor=1.0):
+class DebiasNetModel(object): # setting the adversarial grad scale to -1 turns of the flipping of the gradient
+  def __init__(self, embs, mlp_layers, activation = tf.nn.tanh, scope = "debie", reg_factor = 0.1, learning_rate = 0.0001, adversarial_grad_scale=1.0, i_factor=1.0, e_factor=1.0):
     self.embeddings = embs
     self.scope = scope
 
