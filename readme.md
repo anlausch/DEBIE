@@ -33,8 +33,8 @@ Example augmentations can be found in `./data`, e.g., `./data/weat_2_aug_postspe
 #### DebiasNet
 
 The model code for DebiasNet is given in `debiasnet.py`. The preparation of the input data using the augmented
-test specifications is implemented in `data_handler.py` and the training code can be found in `exp_debiasnet_args.py`. The bash script `run_debiasnet.sh`
-`run_debiasnet.sh`. demonstrates how to start the training.
+test specifications is implemented in `data_handler.py` and the training code can be found in `exp_debiasnet_args.py`.
+The bash script `run_debiasnet.sh` demonstrates how to start the training.
 Just running the prediction, i.e., the debiasing, with a pretrained debiasing model is demonstrated in
 `exp_debiasnet_args_predict_only.py` and an example call can be found in `run_debiasnet_prediction.sh`.
 

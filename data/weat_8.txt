@@ -1,0 +1,4 @@
+T1: science technology physics chemistry Einstein NASA experiment astronomy
+T2: poetry art Shakespeare dance literature novel symphony drama
+A1: brother father uncle grandfather son he his him
+A2: sister mother aunt grandmother daughter she hers her
