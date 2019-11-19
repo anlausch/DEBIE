@@ -1,5 +1,4 @@
 import numpy as np
-import utils
 from scipy import stats
 from sklearn.cluster import KMeans
 from sklearn import svm

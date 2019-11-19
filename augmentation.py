@@ -5,8 +5,8 @@ import codecs
 import numpy as np
 import data_handler
 import argparse
-from util import load_specialized_embeddings
-from util import select_random_attributes
+from utils import load_specialized_embeddings
+from utils import select_random_attributes
 
 
 def mat_normalize(mat, norm_order=2, axis=1):

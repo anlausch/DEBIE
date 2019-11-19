@@ -5,10 +5,10 @@ Used to prepare data for input to debiasnet, e.g. preparing training constraints
 import codecs
 from itertools import product
 import pickle
-from util import fuse_stimuli
-from util import flatten
-from util import read_weat_data
-from util import select_random_attributes
+from utils import fuse_stimuli
+from utils import flatten
+from utils import read_weat_data
+from utils import select_random_attributes
 
 class InputExample(object):
 

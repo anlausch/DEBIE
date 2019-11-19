@@ -12,8 +12,6 @@ import time
 from collections import OrderedDict
 import math
 from sklearn.metrics.pairwise import euclidean_distances
-from scipy import stats
-from sys import stdin
 
 class XWEAT(object):
   """

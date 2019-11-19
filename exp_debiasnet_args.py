@@ -6,7 +6,7 @@ import random
 import logger
 import os
 import itertools
-from util import load_specialized_embeddings
+from utils import load_specialized_embeddings
 import argparse
 import data_handler
 

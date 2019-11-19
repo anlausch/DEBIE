@@ -46,6 +46,20 @@ evaluation can be found in `exp_gbdd_bam.py`.
 The code for GBDD can be found in `gbdd.py`. The code for running the experiments with BAM together with GBDD and the final DebiasNet
 evaluation can be found in `exp_gbdd_bam.py`.
 
-### Evaluation
+### Evaluation Framework
 
-All code related to the evaluation framework can be found in `./evaluation`.
+All code related to the evaluation framework can be found in `./evaluation`. The script `./evaluation/eval.py` contains
+functions for running the following tests:
+
+- Implicit Bias Tests
+        - ... clustering with KMeans++
+        - ... classification with SVM
+- Explicit Bias Tests
+        - Embedding Coherence Test
+        - Bias Analogy Test
+- Semantic Quality Evaluation
+        - SimLex-999 (Test data not provided in this repo)
+        - WordSim-543 (Test data not provided in this repo)
+
+XWEAT (explicit bias test): For the full code of XWEAT we refer to [XWEAT Repo Link](https://github.com/umanlp/XWEAT).
+However, in `exp_gbdd_bam.py` we have copied the test specifications needed to perform the tests used in the paper.
