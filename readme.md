@@ -72,20 +72,20 @@ XWEAT (explicit bias test): For the full code of XWEAT we refer to [XWEAT Repo L
 However, in `exp_gbdd_bam.py` we have copied the test specifications needed to perform the tests used in the paper.
 
 #### Usage of the Evaluation Framework
-(1) Decide on bias specifications to use: Either write them on your own or use predefined bias specifications, e.g., DEBIE/DATA/weat_8.txt
+(1) Decide on bias specifications to use: Either write them on your own or use predefined bias specifications, e.g., `DEBIE/DATA/weat_8.txt`
 
-(2) All evaluation tests are functions in eval.py except for WEAT. The usage is demonstrated in https://github.com/anlausch/DEBIE/blob/master/exp_gbdd_bam.py (but don't be confused as it also demonstrates the debiasing with BAM and GBDD): 
+(2) All evaluation tests are functions in `eval.py` except for WEAT. The usage is demonstrated in https://github.com/anlausch/DEBIE/blob/master/exp_gbdd_bam.py (but don't be confused as it also demonstrates the debiasing with BAM and GBDD): 
 
-- line 21-38: load a specification
-- line 45- 84: load embedding spaces (we expect vocab to be a dict mapping words to indices and vecs is a numpy matrix containing word embeddings, such that for instance vocab["house"] returns the index for the vector of house, which can be accessed like this vecs[index])
-- if you want to load XWEAT test translations (for the predefined tests, we have spanish inside): line 106-129 (you have to adapt the path to the translations)
+- lines 21-38: load a specification
+- lines 45-84: load embedding spaces (we expect vocab to be a dict mapping words to indices and vecs is a numpy matrix containing word embeddings such that for instance `vocab["house"]` returns the index for the vector of house, which can be accessed with `vecs[index]`)
+- if you want to load XWEAT test translations (for the predefined tests): lines 106-129 (you have to adapt the path to the translations)
 - Tests
-    - BAT: line 223
-    - WEAT: line 233-243
-    - KMeans: line 250-254
-    - ECT: line 261-265
+    - BAT: lines 223-227
+    - WEAT: lines 233-243
+    - KMeans: lines 250-254
+    - ECT: lines 261-265
     - Simlex: loading the evaluation data set line 94, usage line 273 -276
     -  WordSim: loading the evaluation data set line 99, usage line 296-299
-    - SVM: ines 211-214: needs training data, which we produce by automatically augmenting the test with a similarity specialiced word embedding space; this is demonstrated in run_augmentation.sh
+    - SVM: lines 211-214; SVM needs training data, which we produce by automatically augmenting the test with a similarity specialiced word embedding space; this is demonstrated in run_augmentation.sh
 
 Don't hesitate to contact us in case you have questions.
