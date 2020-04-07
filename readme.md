@@ -17,6 +17,9 @@ Distributional word vectors have recently been shown to encode many of the human
 
 [ArXive Link](https://arxiv.org/abs/1909.06092)
 
+## Update
+An example Colab demonstrating the use of ECT, BAT, and KMeans++ for reproducing our scores on English fastText can be found here: https://colab.research.google.com/drive/1C05uSYIK1Qn02G2f02IGfUF3J-Hxix0I
+
 ## Repository Description
 
 This code contains all code needed to reproduce the experiments and results reported in our paper.
