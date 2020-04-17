@@ -16,10 +16,16 @@ Distributional word vectors have recently been shown to encode many of the human
 ```
 
 [ArXive Link](https://arxiv.org/abs/1909.06092)
+-----------------------
+## Update: Demo Notebooks
+We recommend starting by looking at one of our example Colab Notebooks.
+- A notebook demonstrating the use of ECT, BAT, and KMeans++ for reproducing our scores on English fastText can be found here: https://colab.research.google.com/drive/1C05uSYIK1Qn02G2f02IGfUF3J-Hxix0I
+- A notebook demonstrating the use of GBDD on fastText and the reproduction of our scores for ECT, BAT, KMeans++ can be found here:
+https://colab.research.google.com/drive/1ysT5RIODmqwMhtxWCpE_0xr_q3f1W57V
 
-## Update
-An example Colab demonstrating the use of ECT, BAT, and KMeans++ for reproducing our scores on English fastText can be found here: https://colab.research.google.com/drive/1C05uSYIK1Qn02G2f02IGfUF3J-Hxix0I
+Please don't hesitate in case you have any questions. We will happily extend the examples in case there are any requests.
 
+------------------------
 ## Repository Description
 
 This code contains all code needed to reproduce the experiments and results reported in our paper.
